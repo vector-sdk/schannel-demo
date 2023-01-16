@@ -1,0 +1,26 @@
+cargo-features = ["per-package-target"]
+
+[workspace]
+members = [
+    "schannel-lib",
+    "schannel-client",
+    "schannel-host",
+    "schannel-eapp",
+]
+
+[workspace.package]
+version      = "0.2.0"
+edition      = "2021"
+authors      = ["Markku Kylänpää <markku.kylanpaa@vtt.fi>"]
+repository   = "https://github.com/vector-sdk/schannel-demo"
+readme       = "README.md"
+license      = "MIT"
+description  = "Rust schannel demo for Keystone Enclaves"
+
+[profile.dev]
+opt-level = 1
+debug = false
+
+[profile.release]
+opt-level = 1
+debug = false

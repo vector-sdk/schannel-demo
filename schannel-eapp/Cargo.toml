@@ -1,0 +1,31 @@
+cargo-features = ["per-package-target"]
+
+[package]
+name                    = "schannel-eapp"
+version.workspace       = true
+edition.workspace       = true
+authors.workspace       = true
+repository.workspace    = true
+readme.workspace        = true
+license.workspace       = true
+description             = ""
+forced-target           = "riscv64gc-unknown-none-elf"
+
+[dependencies]
+sha2          = {version = "0.9.2", default-features = false}
+aes           = {version = "0.8.1", default-features = false}
+generic-array = {version = "0.14", default-features = false}
+getrandom     = {version = "0.2", features = ["custom"]}
+lazy_static   = {version = "1.4.0"}
+no-std-compat = "0.4.1"
+
+[dependencies.eapp]
+path = "../rust-sdk/libeapp"
+
+[dependencies.static-dh-ecdh]
+path = "../static-dh-ecdh"
+
+[features]
+default      = []
+debug_memory = ["eapp/debug_memory"]
+

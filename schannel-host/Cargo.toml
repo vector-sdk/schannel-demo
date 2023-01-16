@@ -1,0 +1,33 @@
+cargo-features = ["per-package-target"]
+
+[package]
+name                    = "schannel-host"
+version.workspace       = true
+edition.workspace       = true
+authors.workspace       = true
+repository.workspace    = true
+readme.workspace        = true
+license.workspace       = true
+description             = ""
+default-target          = "riscv64gc-unknown-linux-gnu"
+
+[dependencies]
+static-dh-ecdh = "0.1.1"
+rand           = "0.8.5"
+sha2           = "0.10.2"
+aes            = "0.8.1"
+lazy_static    = "1.4.0"
+
+[dependencies.happ]
+path = "../rust-sdk/libhapp"
+
+[dependencies.schannel-lib]
+path = "../schannel-lib"
+version = "0.2.0"
+
+[features]
+default      = []
+debug_memory = ["happ/debug_memory"]
+
+[build-dependencies]
+
