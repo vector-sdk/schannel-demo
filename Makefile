@@ -23,7 +23,6 @@ install:
 	cp $(HAPP_TARGET)/schannel-client $(KEYSTONE_BUILD_DIR)/overlay/root
 	cp $(HAPP_TARGET)/schannel-host $(KEYSTONE_BUILD_DIR)/overlay/root
 	cp $(EAPP_TARGET)/schannel-eapp $(KEYSTONE_BUILD_DIR)/overlay/root
-	(cd $(KEYSTONE_BUILD_DIR); make image)
 
 run:
 	@echo "Keystone build directory is $(KEYSTONE_DIR)"
