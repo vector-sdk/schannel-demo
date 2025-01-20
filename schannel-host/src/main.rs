@@ -20,7 +20,7 @@ use schannel_lib::*;
 
 use happ::{Enclave, Error, Status};
 use happ::ocall::{OCall, Listener};
-use happ::builder::Builder;
+use happ::builder::{Builder, Loadable};
 use happ::device::{KEYSTONE_DEVICE_PATH};
 
 // Ocall identifier
@@ -158,7 +158,7 @@ pub fn send_reply(mut stream: &TcpStream, pk: &PkP384, evidence: &Vec<u8>) -> Re
 // encryption. Keep the channel open until a termination message is
 // received. Receive text line messages from the client and return
 // back the word count of the received message.
-fn handle_client(stream: TcpStream, app: String, ert: String, id: usize) -> Result<(), happ::Error> {
+fn handle_client(stream: TcpStream, app: String, ert: String, ldr: String, id: usize) -> Result<(), happ::Error> {
     // Receive client's Elliptic Curve public key
     let (nonce, client_pk) = match receive_request(&stream) {
         Ok((nonce, client_pk)) => (nonce, client_pk),
@@ -166,7 +166,7 @@ fn handle_client(stream: TcpStream, app: String, ert: String, id: usize) -> Resu
     };
 
     // Build own enclave instance for this thread
-    let mut enclave = match build_enclave(&app, &ert, id) {
+    let mut enclave = match build_enclave(&app, &ert, &ldr, id) {
         Ok(enc) => enc,
         Err(e) =>  {
             println!("Enclave build failed");
@@ -300,7 +300,7 @@ fn handle_client(stream: TcpStream, app: String, ert: String, id: usize) -> Resu
 //
 // Each connection will get its own enclave instance. There can be MAX_SLOTS
 // (16) concurrent connections.
-fn build_enclave<'a>(app: &'a String, ert: &'a String, id: usize) -> Result<Enclave<'a>, happ::Error> {
+fn build_enclave<'a>(app: &'a String, ert: &'a String, ldr: &'a String, id: usize) -> Result<Enclave<'a>, happ::Error> {
     let mut builder = Builder::new();
     // Setup shared memory bounds
     match get_slot_info(id) {
@@ -323,13 +323,19 @@ fn build_enclave<'a>(app: &'a String, ert: &'a String, id: usize) -> Result<Encl
     }
 
     // Add enclave runtime binary
-    if builder.add(&ert, true).is_err() {
+    if builder.add(&ldr, Loadable::Loader).is_err() {
+        println!("Failed to add binary: {}", ldr);
+        return Err(Error::Unknown);
+    }
+
+    // Add enclave runtime binary
+    if builder.add(&ert, Loadable::Runtime).is_err() {
         println!("Failed to add binary: {}", ert);
         return Err(Error::Unknown);
     }
 
     // Add enclave application binary
-    if builder.add(&app, false).is_err() {
+    if builder.add(&app, Loadable::Binary).is_err() {
         println!("Failed to add binary: {}", app);
         return Err(Error::Unknown);
     }
@@ -405,7 +411,7 @@ fn get_slot_info(id: usize) -> Result<(usize, usize), &'static str> {
 
 // Print program usage information
 fn usage(exe: &String) {
-    println!("Usage: {} ./schannel-eapp ./eyrie-rt [0.0.0.0:3333]", exe);
+    println!("Usage: {} ./schannel-eapp ./eyrie-rt ./loader [0.0.0.0:3333]", exe);
 }
 
 // Start a server listening to incoming connections and build an enclave
@@ -413,14 +419,15 @@ fn usage(exe: &String) {
 // connection.
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() < 3 {
+    if args.len() < 4 {
         usage(&env::args().nth(0).unwrap());
         return;
     }
     let app = env::args().nth(1).unwrap();
     let ert = env::args().nth(2).unwrap();
-    let address = if args.len() > 3 {
-        env::args().nth(3).unwrap() } else { "0.0.0.0:3333".to_string() };
+    let ldr = env::args().nth(3).unwrap();
+    let address = if args.len() > 4 {
+        env::args().nth(4).unwrap() } else { "0.0.0.0:3333".to_string() };
 
     let listener = TcpListener::bind(&address).unwrap();
     println!("Server listening on {}", &address);
@@ -430,10 +437,11 @@ fn main() {
                 println!("New connection: {}", stream.peer_addr().unwrap());
                 let enclave_app = app.clone();
                 let runtime = ert.clone();
+		let loader = ldr.clone();
                 match next_slot_index() {
                     Ok(index) => {
                         thread::spawn(move|| {
-                            handle_client(stream, enclave_app, runtime, index)
+                            handle_client(stream, enclave_app, runtime, loader, index)
                         });
                     },
                     Err(e) => println!("Error: {}", e),
