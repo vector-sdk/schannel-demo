@@ -7,9 +7,10 @@ members = [
     "schannel-host",
     "schannel-eapp",
 ]
+resolver = "2"
 
 [workspace.package]
-version      = "0.2.0"
+version      = "0.3.0"
 edition      = "2021"
 authors      = ["Markku Kylänpää <markku.kylanpaa@vtt.fi>"]
 repository   = "https://github.com/vector-sdk/schannel-demo"
