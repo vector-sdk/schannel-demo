@@ -13,10 +13,10 @@ HAPP_TARGET = target/riscv64gc-unknown-linux-gnu/release
 EAPP_TARGET = target/riscv64gc-unknown-none-elf/release
 
 all:
-	(cd schannel-lib; cargo build --release)
-	(cd schannel-client; cargo build --release)
-	(cd schannel-host; cargo build --release)
-	(cd schannel-eapp; cargo build --release)
+	(cd schannel-lib; cargo build -v --release)
+	(cd schannel-client; cargo build --target riscv64gc-unknown-linux-gnu -v --release)
+	(cd schannel-host; cargo build -v --release)
+	(cd schannel-eapp; cargo build -v --release)
 
 install:
 	@echo "Keystone build directory is $(KEYSTONE_BUILD_DIR)"
