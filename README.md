@@ -9,15 +9,15 @@ client to the enclave application.
 
 Software is organized as the following components:
 
-* schannel-client - Secure channel client thta is used to conect to
+* **schannel-client** - Secure channel client thta is used to conect to
   the service.
 
-* schannel-eapp - Enclave application.
+* **schannel-eapp** - Enclave application.
 
-* schannel-host - Secure channel host application that serves connecting
+* **schannel-host** - Secure channel host application that serves connecting
   clients and passes requests to the enclave application.
 
-* schannel-lib - Shared code betwwen schannel-client and schannel-host.
+* **schannel-lib** - Shared code betwwen schannel-client and schannel-host.
 
 The code implements the similar use case as the Keystone demo. The
 client is sending a text line via the secure channel and the enclave
@@ -34,8 +34,8 @@ Rust software development tools must be installed
 * cargo - Rusts's package manager
 
 Keystone must be installed and built. The environment variable
-*KEYSTONE_BUILD_DIR* should point to the 'build' directory of the
-Keystone installation.
+*KEYSTONE_BUILD_DIR* should point to the build directory (e.g.,
+build-generic64 for qemu builds) of the Keystone installation.
 
 A Rust SDK for building Keystone enclave applications should be
 cloned:
@@ -99,11 +99,11 @@ mentions a port that is used by sshd to listen incoming
 connections. After login Keystone kernel module should be loaded using
 a command:
 
-      insmod keystone-driver.ko
+      modprobe keystone-driver
 
 The server should be started by using a command:
 
-      ./schannel-host ./schannel-eapp ./eyrie-rt
+      ./schannel-host ./schannel-eapp ./eyrie-rt ./loader
 
 This is starting a server (in the top directory). The server is by
 default bound to a port 3333. Use another shell in the host computer
@@ -146,7 +146,7 @@ There is a placeholder for remote attestation and there is also
 attestation request and reply but the attestation evidence is not
 verified.
 
-Our Rust SDK is using deprecated 'to_bits/from_bits' functions that
+Our Rust SDK is using deprecated 'to\_bits/from\_bits' functions that
 should be replaced with other functions. This is generating compiler
 warnings with newer Rust compiler versions.
 
@@ -159,8 +159,15 @@ using the insmod command.
 Each qemu invocation will create a different ssh key for the sshd
 server. The client connection will report that the remote host
 identification has changed. You can remove the entry using the
-command:
+command (assuming ssh port mapping for port 3000):
 
-ssh-keygen -f $HOME/.ssh/known_hosts -R "[localhost]:3000"
+      ssh-keygen -f $HOME/.ssh/known_hosts -R "[localhost]:3000"
 
 The code contains also quite a lot debug output.
+
+# Acknowledgment
+
+This work is partly supported by the European Union’s Horizon Europe
+research and innovation programme in the scope of the the
+[CONFIDENTIAL6G](https://confidential6g.eu/) project under Grant
+Agreement 101096435.
